@@ -1,16 +1,4 @@
 
-Conversation opened. 1 unread message.
-
-Skip to content
-Using Gmail with screen readers
-1 of 841
-main code update
-Inbox
-
-James Hornby <jmshrnby@googlemail.com>
-09:55 (0 minutes ago)
-to me
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "myCamClass.h"
@@ -279,6 +267,3 @@ glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 return textureID;
 }
-
-
-
