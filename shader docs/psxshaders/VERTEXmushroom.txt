@@ -1,0 +1,89 @@
+#version 330 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out float DiffAmt;
+noperspective out vec2 TexCoords;
+
+
+
+
+struct Light
+{
+	vec3 position;
+	
+	vec3 ambient;	
+	vec3 diffuse;
+	//vec3 specular;
+	
+	//attenuation
+	float quad;
+	float lin;
+	float con;
+};
+
+
+
+
+uniform Light lite;
+
+//uniform vec3 camPos;
+
+
+
+vec4 PSXsnap(mat4 mod, mat4 view, mat4 proj, vec3 pos, float scrW, float scrH);
+float calculatePointLightDiffuse(Light lite,vec3 worldNorm, vec3 worldVertPos);
+
+
+void main()
+{
+	
+	vec3 worldVertex = vec3(model*vec4(aPos,1.0f));
+	vec3 worldNormal = mat3(transpose(inverse(model)))*aNormal;
+	
+	gl_Position = PSXsnap(model,view,projection,aPos,320,240);
+	DiffAmt = calculatePointLightDiffuse(lite,worldNormal,worldVertex);
+	TexCoords = aTexCoords;
+	
+
+}
+
+
+
+vec4 PSXsnap(mat4 mod, mat4 view, mat4 proj, vec3 pos, float scrW, float scrH)
+{
+	vec2 grid = vec2(scrW,scrH)/2.0f;
+	vec4 clipVert = proj*view*mod*vec4(pos,1.0f);
+	vec4 snapped = clipVert;
+	snapped.xyz = clipVert.xyz/clipVert.w;
+	snapped.xy = floor(grid*snapped.xy)/grid;
+	snapped.xyz *= clipVert.w; 
+
+//dont forget to transform normals
+
+	return snapped;
+
+}
+
+
+float calculatePointLightDiffuse(Light lite,vec3 worldNorm, vec3 worldVertPos )
+{
+	//diffuse
+	vec3 lightDir = normalize(lite.position - worldVertPos);
+	float diffAmt = max(dot(lightDir,worldNorm),0.0f);
+
+	//attenuation
+	float distance = length(lite.position - worldVertPos);
+	float atten = 1.0f/((distance*distance*lite.quad)+(distance*lite.lin)+lite.con); 
+	
+	return diffAmt*atten;
+
+	
+
+}
