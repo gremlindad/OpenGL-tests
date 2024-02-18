@@ -1,0 +1,8 @@
+float linearDepth(float nlDepth, float n, float f)
+{
+	float ndc = 2.0f*nlDepth - 1.0f;
+	float linear = 2*f*n/((f+n)-ndc*(f-n));
+	float linearNormalized = (linear-n)/(f-n);
+
+	return linearNormalized;
+}

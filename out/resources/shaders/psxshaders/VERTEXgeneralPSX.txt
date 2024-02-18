@@ -1,0 +1,42 @@
+#version 330 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+
+vec4 PSXsnap(mat4 mod, mat4 view, mat4 proj, vec3 pos, float scrW, float scrH);
+
+
+
+void main()
+{
+	
+	vec3 worldVertex = vec3(model*vec4(aPos,1.0f));
+	vec3 worldNormal = mat3(transpose(inverse(model)))*aNormal;
+	
+	gl_Position = PSXsnap(model,view,projection,aPos,320,240);
+	
+}
+
+
+
+vec4 PSXsnap(mat4 mod, mat4 view, mat4 proj, vec3 pos, float scrW, float scrH)
+{
+	vec2 grid = vec2(scrW,scrH)/2.0f;
+	vec4 clipVert = proj*view*mod*vec4(pos,1.0f);
+	vec4 snapped = clipVert;
+	snapped.xyz = clipVert.xyz/clipVert.w;
+	snapped.xy = floor(grid*snapped.xy)/grid;
+	snapped.xyz *= clipVert.w; 
+
+	return snapped;
+
+}
+
+
+
