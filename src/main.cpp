@@ -29,6 +29,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
 
+const double myPI = (4 * atan(1));
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
@@ -65,7 +66,7 @@ int main()
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
+	//glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	void checkCompile(unsigned int id, std::string type);
 	unsigned int loadCubemap(std::vector<std::string> faces);
@@ -97,7 +98,7 @@ int main()
 	}
 
 	stbi_set_flip_vertically_on_load(true);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 	glEnable(GL_DEPTH_TEST);
 
@@ -111,8 +112,6 @@ int main()
 	"../resources/shaders/psxshaders/FRAGMENTgeneralPSX.txt");
 
 	Model mo("../resources/models/somedude/somedude.obj");
-	Model mush("../resources/models/mushroom/mushroom.obj");
-	Model floor("../resources/models/floorPlane/floorPlane.obj");
 	Model lightmodel("../resources/models/lightpoint/lightpoint.obj");
 
 
@@ -134,26 +133,50 @@ int main()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow(); // Show demo window! :)
+	ImGui::Begin("Menu");
+	ImGui::MenuItem("BG Colour", NULL, true);
 
 
-	glClearColor(0.1, 0.1, 0.1, 1.0);
+
+	static float color[3] = { 0.5f,0.5f,0.5f };
+	ImGui::ColorEdit3("BG Colour", color);
+
+
+	glClearColor(color[0], color[1], color[2], 1.0);
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
 
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
+	static float modRot = 0.0f;
+	ImGui::SliderFloat("Model Rotation", &modRot, 0, 2 * myPI);
+
+
+	static float ambLi[3] = { 0.5f,0.5f,0.5f };
+	ImGui::ColorEdit3("Ambient Light Col", ambLi); 
+
+	static float yliPos = 3.0f;
+	ImGui::SliderFloat("Light Y Pos", &yliPos, 0, 6);
+
+
+	static float radius = 4.0f;
+	ImGui::SliderFloat("Light Radius Pos", &radius, 2, 5);
+
+	static float LightRotPos = 2.0f;
+	ImGui::SliderFloat("Light ", &LightRotPos, 0, 2 * myPI);
+
+	glm::vec3 lightPosition = glm::vec3(sin(LightRotPos)*radius, yliPos, cos(LightRotPos)*radius);
+
+	ImGui::MenuItem(" ", NULL, true);
 
 
 
-
-
-	float radius = 5.0f;
-	glm::vec3 lightPosition = glm::vec3(2+ sin(glfwGetTime())*radius, 3.0f, cos(glfwGetTime())*radius);
 
 	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model,modRot,glm::vec3(0,1,0));
+
+
 	glm::mat4 view = myCam.GetViewMatrix();
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
@@ -163,7 +186,7 @@ int main()
 	sh.setMat4("view", view);
 	sh.setMat4("projection", projection);
 	sh.setVec3("lite.position",lightPosition);
-	sh.setVec3("lite.ambient", .1,.1,.1);
+	sh.setVec3("lite.ambient", ambLi[0],ambLi[1],ambLi[2]);
 	sh.setVec3("lite.diffuse", .8,.8,.8);
 	sh.setVec3("lite.specular",1,1,1);
 
@@ -171,19 +194,14 @@ int main()
 	sh.setFloat("lite.lin", 0.09f);
 	sh.setFloat("lite.con", 1.0f);
 
-
-
+	
 
 	mo.Draw(sh);
-	floor.Draw(sh);
-	model = glm::translate(model, glm::vec3(5.0f, 0.0f, 0.0f));
-	sh.setMat4("model", model);
-	mush.Draw(sh);
-
 
 	sh2.use();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, lightPosition);
+	model = glm::scale(model, glm::vec3(0.3));
 	sh2.setMat4("model", model);
 	sh2.setMat4("view", view);
 	sh2.setMat4("projection", projection);
@@ -191,6 +209,11 @@ int main()
 
 
 	lightmodel.Draw(sh2);
+
+	
+	ImGui::End();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 
 	glfwSwapBuffers(window);
@@ -214,67 +237,67 @@ return 0;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-//glViewport(0, 0, width, height);
+	//glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow* window)
 {
-if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-{
-glfwSetWindowShouldClose(window, true);
-}
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
 
 
-const float cameraSpeed = 2.5f * deltaTime;
+	const float cameraSpeed = 2.5f * deltaTime;
 
-if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-{
-myCam.ProcessKeyboard(FORWARD, deltaTime);
-}
-if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-{
-myCam.ProcessKeyboard(BACKWARD, deltaTime);
-}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		myCam.ProcessKeyboard(FORWARD, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		myCam.ProcessKeyboard(BACKWARD, deltaTime);
+	}
 
-if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)//left
-{
-myCam.ProcessKeyboard(LEFT, deltaTime);
-}
-if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)//left
-{
-myCam.ProcessKeyboard(RIGHT, deltaTime);
-}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)//left
+	{
+		myCam.ProcessKeyboard(LEFT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)//left
+	{
+		myCam.ProcessKeyboard(RIGHT, deltaTime);
+	}
 
-//myCam.Position.y = 0.0f;
+	//myCam.Position.y = 0.0f;
 
 }
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 
-if (firstMouse) // initially set to true
-{
-lastX = xpos;
-lastY = ypos;
-firstMouse = false;
-}
+	if (firstMouse) // initially set to true
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
 
-float xoffset = xpos - lastX;//subtract vector of last position from current position
-float yoffset = lastY - ypos;
-lastX = xpos;
-lastY = ypos;
+	float xoffset = xpos - lastX;//subtract vector of last position from current position
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
 
-const float sensitivity = 0.1f;
-xoffset *= sensitivity;
-yoffset *= sensitivity;
+	const float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
 
-myCam.ProcessMouseMovement(xoffset,yoffset);
+	myCam.ProcessMouseMovement(xoffset,yoffset);
 
 
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-myCam.ProcessMouseScroll(static_cast<float>(yoffset));
+	myCam.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 
