@@ -3,7 +3,7 @@
 
 
 --Build instructions--  
-    just build with cmake, the exe is in /build/out/debug
+just build with cmake, the exe is in /build/out/debug
 
---Libraries--
+--Libraries--  
     assimp, glfw, glad, stbi and glm
