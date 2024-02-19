@@ -1,0 +1,71 @@
+#version 330 core
+
+in vec2 TexCoords;
+in vec3 FragPos;
+in vec3 Normal;
+out vec4 FragColor;
+
+struct Material
+{
+	sampler2D diffuseMap1;
+	sampler2D specularMap1;
+
+	float shininess;
+};
+
+
+struct Light
+{
+	
+	vec3 position;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	//attenuation
+	float quad;
+	float lin;
+	float con;
+
+};
+
+uniform Material material;
+uniform Light light;
+uniform vec3 camPos;
+
+
+
+void main()
+{
+	vec3 lightDir = normalize(light.position - FragPos);
+	vec3 camDir = normalize(camPos - FragPos);
+	vec3 normal = normalize(Normal);
+
+	//ambient
+	vec3 ambient = light.ambient * texture(material.diffuseMap1,TexCoords).rgb;
+	
+	//diffuse
+	float diffAmt = max(dot(normal,lightDir),0.0f);
+	vec3 diffuse = light.diffuse * diffAmt * texture(material.diffuseMap1,TexCoords).rgb;
+
+	//specular
+	vec3 reflectLight = reflect(-lightDir,normal);
+	float specAmt = pow(max(dot(reflectLight,camDir),0.0f),material.shininess);
+	vec3 specular = light.specular * specAmt * texture(material.specularMap1,TexCoords).rgb;
+
+	//attenuation
+	
+	float distance = length(light.position);
+	float attenuation = 1.0f/((distance*distance*light.quad)+(distance*light.lin)+(light.con));
+
+	
+	diffuse*=attenuation;
+	specular*=attenuation;
+
+
+
+	vec3 result = ambient + diffuse+specular;
+	FragColor = vec4(result,1.0f);
+	//FragColor = vec4(texture(material.diffuseMap1,TexCoords).rgb,1.0f);
+}

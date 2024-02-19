@@ -1,0 +1,10 @@
+^C:\USERS\JMSHR\DOWNLOADS\GLFW\GLFW-3.3.9\BUILD\CMAKEFILES\99B3F111A4F71404885C651D48C03EFF\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/jmshr/Downloads/GLFW/glfw-3.3.9 -BC:/Users/jmshr/Downloads/GLFW/glfw-3.3.9/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/jmshr/Downloads/GLFW/glfw-3.3.9/build/GLFW.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

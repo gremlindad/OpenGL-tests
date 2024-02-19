@@ -1,0 +1,31 @@
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 TexCoord;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+uniform float time;
+
+vec2 grid;
+vec4 vertInClip;
+vec4 snapped;
+
+
+void main()
+{
+	grid = vec2(100,75);
+
+	vertInClip = projection * view * model * vec4(aPos, 1.0);
+	
+
+	snapped = vertInClip;
+	snapped.xyz = vertInClip.xyz / vertInClip.w;
+	snapped.xy = floor(grid*snapped.xy)/grid;
+	snapped.xyz *= vertInClip.w;//need to multiply back to clipspace 
+	gl_Position = snapped;
+
+	TexCoord = aTexCoord;
+}

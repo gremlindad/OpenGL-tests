@@ -1,0 +1,39 @@
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 TexCoord;
+vec2 grid;
+vec4 vertInClip;
+vec4 snapped;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+
+
+
+
+
+void main()
+{
+
+	grid = vec2(100,75);
+
+	vertInClip = projection * view * model * vec4(aPos, 1.0);
+	snapped = vertInClip;
+	snapped.xyz = vertInClip.xyz / vertInClip.w;
+	
+	//at this point its in ndc
+	
+	//then we scale it by the grid and floor it, then reduce it back down
+	snapped.xy = floor(grid*snapped.xy)/grid;
+
+	//then we remove the perspective divide
+	snapped.xyz *= vertInClip.w;//need to multiply back to clipspace 
+	gl_Position = snapped;
+
+
+	TexCoord = vec2(aTexCoord.x, aTexCoord.y);
+}
